@@ -17,7 +17,7 @@ class ReyouApp extends StatelessWidget {
       title: 'ReYou',
       theme: ThemeData(scaffoldBackgroundColor: lightBackgroundColor),
       initialRoute: AppRoutes.splash,
-      routes: appRoutes,
+      routes: appPages,
     );
   }
 }

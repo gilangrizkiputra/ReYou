@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
+import 'package:reyou/presentation/routes/app_pages.dart';
 import 'package:reyou/presentation/routes/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     Timer(const Duration(seconds: 2), () {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
     });
   }
 
