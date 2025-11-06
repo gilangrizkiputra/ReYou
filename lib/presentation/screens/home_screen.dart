@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
+import 'package:reyou/data/local/user_preference.dart';
 import 'package:reyou/presentation/routes/app_routes.dart';
+import 'package:reyou/presentation/widgets/name_popup.dart';
 import 'package:reyou/presentation/widgets/reminder_card.dart';
 
 final List<Map<String, String>> reminderList = [
@@ -15,8 +17,48 @@ final List<Map<String, String>> reminderList = [
   {"title": "Meeting Tim", "date": "26/10/2025", "time": "09.30"},
 ];
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkUserName();
+    _loadUsername();
+  }
+
+  String? username;
+
+  Future<void> _loadUsername() async {
+    final name = await UserPreference.getUsername();
+    setState(() {
+      username = name;
+    });
+  }
+
+  void _checkUserName() async {
+    bool hasName = await UserPreference.hasUsername();
+    if (!hasName && mounted) {
+      Future.delayed(Duration.zero, () async {
+        final result = await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const NamePopup(),
+        );
+
+        if (result != null) {
+          await _loadUsername();
+        }
+      });
+    } else {
+      await _loadUsername();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +68,7 @@ class HomeScreen extends StatelessWidget {
         title: Padding(
           padding: EdgeInsetsGeometry.only(left: 5),
           child: Text(
-            "Beranda",
+            username != null ? 'Halo, $username' : '',
             style: purpleTextStyle.copyWith(fontSize: 19, fontWeight: bold),
           ),
         ),
@@ -92,7 +134,7 @@ class HomeScreen extends StatelessWidget {
                     child: ReminderCard(
                       title: item["title"] ?? "-",
                       date: item["date"] ?? "-",
-                      time: item["date"] ?? "-",
+                      time: item["time"] ?? "-",
                     ),
                   );
                 },
