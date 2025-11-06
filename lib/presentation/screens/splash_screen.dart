@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
-import 'package:reyou/presentation/routes/app_pages.dart';
 import 'package:reyou/presentation/routes/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {

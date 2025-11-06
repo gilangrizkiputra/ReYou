@@ -1,0 +1,109 @@
+import 'package:flutter/material.dart';
+import 'package:reyou/core/constants/theme.dart';
+
+class ReminderCard extends StatefulWidget {
+  final String title;
+  final String date;
+  final String time;
+
+  const ReminderCard({
+    super.key,
+    required this.title,
+    required this.date,
+    required this.time,
+  });
+
+  @override
+  State<ReminderCard> createState() => _ReminderCardState();
+}
+
+class _ReminderCardState extends State<ReminderCard> {
+  bool isActive = false;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: whiteColor,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: isActive ? greenColor : redColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              SizedBox(width: 20),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.title,
+                    style: purpleTextStyle.copyWith(
+                      fontSize: 14,
+                      fontWeight: bold,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.date_range_outlined,
+                        size: 15,
+                        color: blackColor,
+                      ),
+                      SizedBox(width: 2),
+                      Text(
+                        widget.date,
+                        style: blackTextStyle.copyWith(
+                          fontSize: 11,
+                          fontWeight: regular,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Icon(
+                        Icons.access_time_rounded,
+                        size: 15,
+                        color: blackColor,
+                      ),
+                      SizedBox(width: 2),
+                      Text(
+                        widget.time,
+                        style: blackTextStyle.copyWith(
+                          fontSize: 11,
+                          fontWeight: regular,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          Switch(
+            value: isActive,
+            onChanged: (value) {
+              setState(() {
+                isActive = value;
+              });
+            },
+            activeColor: whiteColor,
+            activeTrackColor: purpleColor,
+            inactiveThumbColor: whiteColor,
+            inactiveTrackColor: greyColor,
+            trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+          ),
+        ],
+      ),
+    );
+  }
+}
