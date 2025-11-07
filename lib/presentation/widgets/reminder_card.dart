@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
 import 'package:reyou/data/local/database_helper.dart';
+import 'package:reyou/data/models/reminder.dart';
 import 'package:reyou/presentation/widgets/add_edit_popup.dart';
 
 class ReminderCard extends StatefulWidget {
@@ -9,6 +10,7 @@ class ReminderCard extends StatefulWidget {
   final String date;
   final String time;
   final bool isActive;
+  final VoidCallback? onUpdate;
 
   const ReminderCard({
     super.key,
@@ -17,6 +19,7 @@ class ReminderCard extends StatefulWidget {
     required this.date,
     required this.time,
     required this.isActive,
+    this.onUpdate,
   });
 
   @override
@@ -36,7 +39,7 @@ class _ReminderCardState extends State<ReminderCard> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        final edited = await showDialog(
+        final editedData = await showDialog(
           context: context,
           builder: (context) => AddEditPopup(
             isEdit: true,
@@ -45,7 +48,17 @@ class _ReminderCardState extends State<ReminderCard> {
             time: widget.time,
           ),
         );
-        if (edited != null) {
+        if (editedData != null) {
+          await DatabaseHelper.instance.updateReminder(
+            ReminderModel(
+              id: widget.id,
+              title: editedData['title'],
+              date: editedData['date'],
+              time: editedData['time'],
+              isActive: isActive,
+            ),
+          );
+          widget.onUpdate?.call();
           setState(() {});
         }
       },

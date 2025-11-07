@@ -31,13 +31,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _checkUserName() async {
     bool hasName = await UserPreference.hasUsername();
+
     if (!hasName && mounted) {
-      Future.delayed(Duration.zero, () async {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+
         await showDialog(
           context: context,
           barrierDismissible: false,
           builder: (context) => const NamePopup(),
         );
+
         await _loadUsername();
         _loadReminders();
       });
@@ -169,6 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             date: item.date,
                             time: item.time,
                             isActive: item.isActive,
+                            onUpdate: _loadReminders,
                           ),
                         );
                       },
