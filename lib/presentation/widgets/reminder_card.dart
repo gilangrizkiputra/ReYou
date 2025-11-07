@@ -10,7 +10,12 @@ class ReminderCard extends StatefulWidget {
   final String date;
   final String time;
   final bool isActive;
+  final bool isDeleteMode;
+  final bool isSelected;
+
   final VoidCallback? onUpdate;
+  final VoidCallback? onLongPress;
+  final ValueChanged<bool>? onSelect;
 
   const ReminderCard({
     super.key,
@@ -19,7 +24,11 @@ class ReminderCard extends StatefulWidget {
     required this.date,
     required this.time,
     required this.isActive,
+    required this.isDeleteMode,
+    required this.isSelected,
     this.onUpdate,
+    this.onLongPress,
+    this.onSelect,
   });
 
   @override
@@ -38,28 +47,33 @@ class _ReminderCardState extends State<ReminderCard> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onLongPress: widget.onLongPress,
       onTap: () async {
-        final editedData = await showDialog(
-          context: context,
-          builder: (context) => AddEditPopup(
-            isEdit: true,
-            title: widget.title,
-            date: widget.date,
-            time: widget.time,
-          ),
-        );
-        if (editedData != null) {
-          await DatabaseHelper.instance.updateReminder(
-            ReminderModel(
-              id: widget.id,
-              title: editedData['title'],
-              date: editedData['date'],
-              time: editedData['time'],
-              isActive: isActive,
+        if (widget.isDeleteMode) {
+          widget.onSelect?.call(!widget.isSelected);
+        } else {
+          final editedData = await showDialog(
+            context: context,
+            builder: (context) => AddEditPopup(
+              isEdit: true,
+              title: widget.title,
+              date: widget.date,
+              time: widget.time,
             ),
           );
-          widget.onUpdate?.call();
-          setState(() {});
+          if (editedData != null) {
+            await DatabaseHelper.instance.updateReminder(
+              ReminderModel(
+                id: widget.id,
+                title: editedData['title'],
+                date: editedData['date'],
+                time: editedData['time'],
+                isActive: isActive,
+              ),
+            );
+            widget.onUpdate?.call();
+            if (mounted) setState(() {});
+          }
         }
       },
       child: Container(
@@ -75,15 +89,43 @@ class _ReminderCardState extends State<ReminderCard> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: isActive ? greenColor : redColor,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                SizedBox(width: 20),
+                widget.isDeleteMode
+                    ? GestureDetector(
+                        onTap: () => widget.onSelect?.call(!widget.isSelected),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: widget.isSelected
+                                  ? purpleColor
+                                  : greyColor,
+                              width: 2,
+                            ),
+                            color: widget.isSelected
+                                ? purpleColor
+                                : Colors.white,
+                          ),
+                          child: widget.isSelected
+                              ? const Icon(
+                                  Icons.check,
+                                  size: 14,
+                                  color: Colors.white,
+                                )
+                              : null,
+                        ),
+                      )
+                    : Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: isActive ? greenColor : redColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                const SizedBox(width: 20),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -94,7 +136,7 @@ class _ReminderCardState extends State<ReminderCard> {
                         fontWeight: bold,
                       ),
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     Row(
                       children: [
                         Icon(
@@ -102,7 +144,7 @@ class _ReminderCardState extends State<ReminderCard> {
                           size: 15,
                           color: blackColor,
                         ),
-                        SizedBox(width: 2),
+                        const SizedBox(width: 2),
                         Text(
                           widget.date,
                           style: blackTextStyle.copyWith(
@@ -110,13 +152,13 @@ class _ReminderCardState extends State<ReminderCard> {
                             fontWeight: regular,
                           ),
                         ),
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
                         Icon(
                           Icons.access_time_rounded,
                           size: 15,
                           color: blackColor,
                         ),
-                        SizedBox(width: 2),
+                        const SizedBox(width: 2),
                         Text(
                           widget.time,
                           style: blackTextStyle.copyWith(
@@ -132,13 +174,15 @@ class _ReminderCardState extends State<ReminderCard> {
             ),
             Switch(
               value: isActive,
-              onChanged: (value) async {
-                setState(() => isActive = value);
-                await DatabaseHelper.instance.updateReminderStatus(
-                  widget.id,
-                  value ? 1 : 0,
-                );
-              },
+              onChanged: widget.isDeleteMode
+                  ? null
+                  : (value) async {
+                      setState(() => isActive = value);
+                      await DatabaseHelper.instance.updateReminderStatus(
+                        widget.id,
+                        value ? 1 : 0,
+                      );
+                    },
               activeColor: whiteColor,
               activeTrackColor: purpleColor,
               inactiveThumbColor: whiteColor,

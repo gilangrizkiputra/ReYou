@@ -16,6 +16,8 @@ class _NamePopupState extends State<NamePopup> {
   void _saveName() async {
     if (_controller.text.isNotEmpty) {
       await UserPreference.saveUsername(_controller.text);
+
+      if (!mounted) return;
       Navigator.pop(context, _controller.text);
     }
   }
