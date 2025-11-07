@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
+import 'package:reyou/data/local/user_preference.dart';
 import 'package:reyou/presentation/routes/app_routes.dart';
 
 class OnboardingScreen extends StatelessWidget {
@@ -56,7 +57,9 @@ class OnboardingScreen extends StatelessWidget {
                     borderRadius: BorderRadiusGeometry.circular(20),
                   ),
                 ),
-                onPressed: () {
+                onPressed: () async {
+                  await UserPreference.setOnboardingSeen();
+                  if (!context.mounted) return;
                   Navigator.pushReplacementNamed(context, AppRoutes.home);
                 },
                 child: Text(

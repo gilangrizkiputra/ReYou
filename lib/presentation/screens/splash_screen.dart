@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
+import 'package:reyou/data/local/user_preference.dart';
 import 'package:reyou/presentation/routes/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -15,10 +16,19 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _checkFirstLaunch();
+  }
 
-    Timer(const Duration(seconds: 2), () {
+  void _checkFirstLaunch() async {
+    await Future.delayed(const Duration(seconds: 2));
+    bool seen = await UserPreference.hasSeenOnboarding();
+    if (!mounted) return;
+
+    if (seen) {
+      Navigator.pushReplacementNamed(context, AppRoutes.home);
+    } else {
       Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
-    });
+    }
   }
 
   @override
