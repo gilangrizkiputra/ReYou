@@ -1,22 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
+import 'package:reyou/data/local/database_helper.dart';
 import 'package:reyou/data/local/user_preference.dart';
+import 'package:reyou/data/models/reminder.dart';
 import 'package:reyou/presentation/routes/app_routes.dart';
 import 'package:reyou/presentation/widgets/add_edit_popup.dart';
 import 'package:reyou/presentation/widgets/name_popup.dart';
 import 'package:reyou/presentation/widgets/reminder_card.dart';
 
-final List<Map<String, String>> reminderList = [
-  {"title": "Belajar Flutter", "date": "24/10/2025", "time": "17.50"},
-  {"title": "Olahraga Pagi", "date": "25/10/2025", "time": "06.00"},
-  {"title": "Meeting Tim", "date": "26/10/2025", "time": "09.30"},
-  {"title": "Belajar Flutter", "date": "24/10/2025", "time": "17.50"},
-  {"title": "Olahraga Pagi", "date": "2GGrip5/10/2025", "time": "06.00"},
-  {"title": "Meeting Tim", "date": "26/10/2025", "time": "09.30"},
-  {"title": "Belajar Flutter", "date": "24/10/2025", "time": "17.50"},
-  {"title": "Olahraga Pagi", "date": "25/10/2025", "time": "06.00"},
-  {"title": "Meeting Tim", "date": "26/10/2025", "time": "09.30"},
-];
+final dbHelper = DatabaseHelper.instance;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,6 +18,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  List<ReminderModel> reminders = [];
+  String? username;
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +29,23 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUsername();
   }
 
-  String? username;
+  void _checkUserName() async {
+    bool hasName = await UserPreference.hasUsername();
+    if (!hasName && mounted) {
+      Future.delayed(Duration.zero, () async {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const NamePopup(),
+        );
+        await _loadUsername();
+        _loadReminders();
+      });
+    } else {
+      await _loadUsername();
+      _loadReminders();
+    }
+  }
 
   Future<void> _loadUsername() async {
     final name = await UserPreference.getUsername();
@@ -42,22 +54,29 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _checkUserName() async {
-    bool hasName = await UserPreference.hasUsername();
-    if (!hasName && mounted) {
-      Future.delayed(Duration.zero, () async {
-        final result = await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const NamePopup(),
-        );
+  void _loadReminders() async {
+    final data = await dbHelper.getReminders();
+    setState(() {
+      reminders = data;
+      _isLoading = false;
+    });
+  }
 
-        if (result != null) {
-          await _loadUsername();
-        }
-      });
-    } else {
-      await _loadUsername();
+  Future<void> _addReminder() async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) => const AddEditPopup(),
+    );
+
+    if (result != null) {
+      final newReminder = ReminderModel(
+        title: result['title'],
+        date: result['date'],
+        time: result['time'],
+      );
+
+      await dbHelper.insertReminder(newReminder);
+      _loadReminders();
     }
   }
 
@@ -126,20 +145,34 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(height: 10),
             Expanded(
-              child: ListView.builder(
-                itemCount: reminderList.length,
-                itemBuilder: (BuildContext context, index) {
-                  final item = reminderList[index];
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 10),
-                    child: ReminderCard(
-                      title: item["title"] ?? "-",
-                      date: item["date"] ?? "-",
-                      time: item["time"] ?? "-",
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : reminders.isEmpty
+                  ? Center(
+                      child: Text(
+                        "Kamu belum mempunyai pengingat!",
+                        style: blackTextStyle.copyWith(
+                          fontSize: 14,
+                          fontWeight: regular,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: reminders.length,
+                      itemBuilder: (context, index) {
+                        final item = reminders[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: ReminderCard(
+                            id: item.id!,
+                            title: item.title,
+                            date: item.date,
+                            time: item.time,
+                            isActive: item.isActive,
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
@@ -149,18 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 80),
         child: GestureDetector(
-          onTap: () async {
-            final newReminder = await showDialog(
-              context: context,
-              builder: (context) => const AddEditPopup(),
-            );
-
-            if (newReminder != null) {
-              setState(() {
-                reminderList.add(newReminder);
-              });
-            }
-          },
+          onTap: _addReminder,
           child: Container(
             width: 76,
             height: 71,

@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
+import 'package:reyou/data/local/database_helper.dart';
 import 'package:reyou/presentation/widgets/add_edit_popup.dart';
 
 class ReminderCard extends StatefulWidget {
+  final int id;
   final String title;
   final String date;
   final String time;
+  final bool isActive;
 
   const ReminderCard({
     super.key,
+    required this.id,
     required this.title,
     required this.date,
     required this.time,
+    required this.isActive,
   });
 
   @override
@@ -19,7 +24,14 @@ class ReminderCard extends StatefulWidget {
 }
 
 class _ReminderCardState extends State<ReminderCard> {
-  bool isActive = false;
+  late bool isActive;
+
+  @override
+  void initState() {
+    super.initState();
+    isActive = widget.isActive;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -34,10 +46,7 @@ class _ReminderCardState extends State<ReminderCard> {
           ),
         );
         if (edited != null) {
-          setState(() {
-            // nanti disini bisa update data
-            // (kalau ReminderCard masih dummy, nanti bakal dikelola di parent HomeScreen)
-          });
+          setState(() {});
         }
       },
       child: Container(
@@ -110,10 +119,12 @@ class _ReminderCardState extends State<ReminderCard> {
             ),
             Switch(
               value: isActive,
-              onChanged: (value) {
-                setState(() {
-                  isActive = value;
-                });
+              onChanged: (value) async {
+                setState(() => isActive = value);
+                await DatabaseHelper.instance.updateReminderStatus(
+                  widget.id,
+                  value ? 1 : 0,
+                );
               },
               activeColor: whiteColor,
               activeTrackColor: purpleColor,
