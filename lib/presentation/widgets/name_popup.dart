@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
 import 'package:reyou/data/local/user_preference.dart';
+import 'package:reyou/presentation/widgets/custom_text_field.dart';
 
 class NamePopup extends StatefulWidget {
   const NamePopup({super.key});
@@ -40,18 +41,7 @@ class _NamePopupState extends State<NamePopup> {
               style: blackTextStyle.copyWith(fontSize: 16, fontWeight: regular),
             ),
             SizedBox(height: 8),
-            TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                hintText: "Masukkan nama",
-                filled: true,
-                fillColor: greyColor,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
+            CustomTextField(controller: _controller, hintText: "Masukkan nama"),
             SizedBox(height: 20),
             Align(
               alignment: Alignment.centerRight,

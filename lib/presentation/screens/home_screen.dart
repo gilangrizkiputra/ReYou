@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
 import 'package:reyou/data/local/user_preference.dart';
 import 'package:reyou/presentation/routes/app_routes.dart';
+import 'package:reyou/presentation/widgets/add_edit_popup.dart';
 import 'package:reyou/presentation/widgets/name_popup.dart';
 import 'package:reyou/presentation/widgets/reminder_card.dart';
 
@@ -10,7 +11,7 @@ final List<Map<String, String>> reminderList = [
   {"title": "Olahraga Pagi", "date": "25/10/2025", "time": "06.00"},
   {"title": "Meeting Tim", "date": "26/10/2025", "time": "09.30"},
   {"title": "Belajar Flutter", "date": "24/10/2025", "time": "17.50"},
-  {"title": "Olahraga Pagi", "date": "25/10/2025", "time": "06.00"},
+  {"title": "Olahraga Pagi", "date": "2GGrip5/10/2025", "time": "06.00"},
   {"title": "Meeting Tim", "date": "26/10/2025", "time": "09.30"},
   {"title": "Belajar Flutter", "date": "24/10/2025", "time": "17.50"},
   {"title": "Olahraga Pagi", "date": "25/10/2025", "time": "06.00"},
@@ -148,7 +149,18 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 80),
         child: GestureDetector(
-          onTap: () {},
+          onTap: () async {
+            final newReminder = await showDialog(
+              context: context,
+              builder: (context) => const AddEditPopup(),
+            );
+
+            if (newReminder != null) {
+              setState(() {
+                reminderList.add(newReminder);
+              });
+            }
+          },
           child: Container(
             width: 76,
             height: 71,
