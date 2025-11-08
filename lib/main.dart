@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
+import 'package:reyou/core/utils/notification_helper.dart';
 import 'package:reyou/presentation/routes/app_pages.dart';
 import 'package:reyou/presentation/routes/app_routes.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationHelper.init();
   runApp(const ReyouApp());
 }
 

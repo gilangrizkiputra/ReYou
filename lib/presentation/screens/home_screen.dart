@@ -13,6 +13,8 @@ import 'package:reyou/presentation/routes/app_routes.dart';
 import 'package:reyou/presentation/widgets/add_edit_popup.dart';
 import 'package:reyou/presentation/widgets/name_popup.dart';
 import 'package:reyou/presentation/widgets/reminder_card.dart';
+import 'package:reyou/domain/usecases/schedule_notification.dart';
+import 'package:reyou/core/utils/notification_helper.dart';
 
 final dbHelper = DatabaseHelper.instance;
 
@@ -101,7 +103,14 @@ class _HomeScreenState extends State<HomeScreen> {
         isActive: 1,
       );
 
-      await addReminderUseCase(newReminder);
+      final insertedId = await addReminderUseCase(newReminder);
+
+      await ScheduleNotification().call(
+        id: insertedId,
+        title: newReminder.title,
+        date: newReminder.date,
+        time: newReminder.time,
+      );
       _loadReminders();
     }
   }
@@ -130,6 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (confirm == true) {
       for (int id in _selectedIds) {
         await dbHelper.deleteReminder(id);
+        await NotificationHelper.cancelNotification(id);
       }
       setState(() {
         _isDeleteMode = false;

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
+import 'package:reyou/core/utils/notification_helper.dart';
 import 'package:reyou/data/models/reminder.dart';
 import 'package:reyou/data/repositories/reminder_repository_impl.dart';
+import 'package:reyou/domain/usecases/schedule_notification.dart';
 import 'package:reyou/domain/usecases/update_reminder.dart';
 import 'package:reyou/domain/usecases/update_status.dart';
 import 'package:reyou/presentation/widgets/add_edit_popup.dart';
@@ -69,16 +71,29 @@ class _ReminderCardState extends State<ReminderCard> {
               time: widget.time,
             ),
           );
+
           if (editedData != null) {
-            await _updateReminder(
-              ReminderModel(
-                id: widget.id,
-                title: editedData['title'],
-                date: editedData['date'],
-                time: editedData['time'],
-                isActive: isActive ? 1 : 0,
-              ),
+            final updatedReminder = ReminderModel(
+              id: widget.id,
+              title: editedData['title'],
+              date: editedData['date'],
+              time: editedData['time'],
+              isActive: isActive ? 1 : 0,
             );
+
+            await _updateReminder(updatedReminder);
+
+            await NotificationHelper.cancelNotification(widget.id);
+
+            if (isActive) {
+              await ScheduleNotification().call(
+                id: widget.id,
+                title: updatedReminder.title,
+                date: updatedReminder.date,
+                time: updatedReminder.time,
+              );
+            }
+
             widget.onUpdate?.call();
             if (mounted) setState(() {});
           }
@@ -187,6 +202,17 @@ class _ReminderCardState extends State<ReminderCard> {
                   : (value) async {
                       setState(() => isActive = value);
                       await _updateReminderStatus(widget.id, value ? 1 : 0);
+
+                      if (value) {
+                        await ScheduleNotification().call(
+                          id: widget.id,
+                          title: widget.title,
+                          date: widget.date,
+                          time: widget.time,
+                        );
+                      } else {
+                        await NotificationHelper.cancelNotification(widget.id);
+                      }
                     },
               activeColor: whiteColor,
               activeTrackColor: purpleColor,
