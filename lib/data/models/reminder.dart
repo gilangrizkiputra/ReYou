@@ -1,27 +1,13 @@
-class ReminderModel {
-  final int? id;
-  final String title;
-  final String date;
-  final String time;
-  final bool isActive;
+import 'package:reyou/domain/entities/reminder_entity.dart';
 
-  ReminderModel({
-    this.id,
-    required this.title,
-    required this.date,
-    required this.time,
-    this.isActive = true,
+class ReminderModel extends ReminderEntity {
+  const ReminderModel({
+    super.id,
+    required super.title,
+    required super.date,
+    required super.time,
+    required super.isActive,
   });
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'date': date,
-      'time': time,
-      'isActive': isActive ? 1 : 0,
-    };
-  }
 
   factory ReminderModel.fromMap(Map<String, dynamic> map) {
     return ReminderModel(
@@ -29,7 +15,17 @@ class ReminderModel {
       title: map['title'],
       date: map['date'],
       time: map['time'],
-      isActive: map['isActive'] == 1,
+      isActive: map['isActive'],
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'date': date,
+      'time': time,
+      'isActive': isActive,
+    };
   }
 }

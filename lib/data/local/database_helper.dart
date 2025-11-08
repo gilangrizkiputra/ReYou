@@ -28,7 +28,7 @@ class DatabaseHelper {
         title TEXT NOT NULL,
         date TEXT NOT NULL,
         time TEXT NOT NULL,
-        isActive INTEGER NOT NULL DEFAULT  1
+        isActive INTEGER NOT NULL DEFAULT 1
       )
     ''');
   }

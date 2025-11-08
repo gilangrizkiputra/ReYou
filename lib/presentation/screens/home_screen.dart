@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
 import 'package:reyou/data/local/database_helper.dart';
 import 'package:reyou/data/local/user_preference.dart';
-import 'package:reyou/data/models/reminder.dart';
+import 'package:reyou/data/repositories/reminder_repository_impl.dart';
+import 'package:reyou/domain/entities/reminder_entity.dart';
+import 'package:reyou/domain/usecases/add_reminder.dart';
+import 'package:reyou/domain/usecases/delete_reminder.dart';
+import 'package:reyou/domain/usecases/get_reminders.dart';
+import 'package:reyou/domain/usecases/update_reminder.dart';
+import 'package:reyou/domain/usecases/update_status.dart';
 import 'package:reyou/presentation/routes/app_routes.dart';
 import 'package:reyou/presentation/widgets/add_edit_popup.dart';
 import 'package:reyou/presentation/widgets/name_popup.dart';
@@ -18,7 +24,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<ReminderModel> reminders = [];
+  final _repository = ReminderRepositoryImpl();
+  late final GetReminders getRemindersUseCase;
+  late final AddReminder addReminderUseCase;
+  late final DeleteReminder deleteReminderUseCase;
+  late final UpdateReminder updateReminderUseCase;
+  late final UpdateReminderStatus updateStatusUseCase;
+
+  List<ReminderEntity> reminders = [];
   String? username;
   bool _isLoading = true;
 
@@ -28,6 +41,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    getRemindersUseCase = GetReminders(_repository);
+    addReminderUseCase = AddReminder(_repository);
+    deleteReminderUseCase = DeleteReminder(_repository);
+    updateReminderUseCase = UpdateReminder(_repository);
+    updateStatusUseCase = UpdateReminderStatus(_repository);
     _checkUserName();
     _loadUsername();
   }
@@ -76,13 +94,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (result != null) {
-      final newReminder = ReminderModel(
+      final newReminder = ReminderEntity(
         title: result['title'],
         date: result['date'],
         time: result['time'],
+        isActive: 1,
       );
 
-      await dbHelper.insertReminder(newReminder);
+      await addReminderUseCase(newReminder);
       _loadReminders();
     }
   }
@@ -218,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   title: item.title,
                                   date: item.date,
                                   time: item.time,
-                                  isActive: item.isActive,
+                                  isActive: item.isActive == 1,
                                   isDeleteMode: _isDeleteMode,
                                   isSelected: _selectedIds.contains(item.id),
                                   onLongPress: () {

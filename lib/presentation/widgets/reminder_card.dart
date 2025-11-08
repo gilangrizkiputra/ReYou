@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:reyou/core/constants/theme.dart';
-import 'package:reyou/data/local/database_helper.dart';
 import 'package:reyou/data/models/reminder.dart';
+import 'package:reyou/data/repositories/reminder_repository_impl.dart';
+import 'package:reyou/domain/usecases/update_reminder.dart';
+import 'package:reyou/domain/usecases/update_status.dart';
 import 'package:reyou/presentation/widgets/add_edit_popup.dart';
 
 class ReminderCard extends StatefulWidget {
@@ -38,10 +40,16 @@ class ReminderCard extends StatefulWidget {
 class _ReminderCardState extends State<ReminderCard> {
   late bool isActive;
 
+  final _repository = ReminderRepositoryImpl();
+  late final UpdateReminderStatus _updateReminderStatus;
+  late final UpdateReminder _updateReminder;
+
   @override
   void initState() {
     super.initState();
     isActive = widget.isActive;
+    _updateReminderStatus = UpdateReminderStatus(_repository);
+    _updateReminder = UpdateReminder(_repository);
   }
 
   @override
@@ -62,13 +70,13 @@ class _ReminderCardState extends State<ReminderCard> {
             ),
           );
           if (editedData != null) {
-            await DatabaseHelper.instance.updateReminder(
+            await _updateReminder(
               ReminderModel(
                 id: widget.id,
                 title: editedData['title'],
                 date: editedData['date'],
                 time: editedData['time'],
-                isActive: isActive,
+                isActive: isActive ? 1 : 0,
               ),
             );
             widget.onUpdate?.call();
@@ -178,10 +186,7 @@ class _ReminderCardState extends State<ReminderCard> {
                   ? null
                   : (value) async {
                       setState(() => isActive = value);
-                      await DatabaseHelper.instance.updateReminderStatus(
-                        widget.id,
-                        value ? 1 : 0,
-                      );
+                      await _updateReminderStatus(widget.id, value ? 1 : 0);
                     },
               activeColor: whiteColor,
               activeTrackColor: purpleColor,
