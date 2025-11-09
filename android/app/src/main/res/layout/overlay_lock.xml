@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:background="#CC000000">
+
+    <TextView
+        android:id="@+id/lockText"
+        android:text="Aplikasi ini dikunci"
+        android:textColor="@android:color/white"
+        android:textSize="24sp"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <!-- <Button
+        android:id="@+id/btnCloseLock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Buka Kunci"
+        android:layout_gravity="center_horizontal"
+        android:background="@android:color/holo_red_light"/> -->
+
+</LinearLayout>

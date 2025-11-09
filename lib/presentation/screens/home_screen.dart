@@ -76,6 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadUsername() async {
     final name = await UserPreference.getUsername();
+    if (!mounted) return;
     setState(() {
       username = name;
     });
@@ -83,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _loadReminders() async {
     final data = await dbHelper.getReminders();
+    if (!mounted) return; 
     setState(() {
       reminders = data;
       _isLoading = false;
@@ -184,16 +186,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 elevation: 0,
                 offset: const Offset(0, 40),
                 itemBuilder: (cxt) => [
-                  PopupMenuItem(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(
-                      "Pengingat",
-                      style: purpleTextStyle.copyWith(fontSize: 14),
-                    ),
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.manajement);
-                    },
-                  ),
                   PopupMenuItem(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Text(
